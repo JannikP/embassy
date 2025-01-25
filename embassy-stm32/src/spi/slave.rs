@@ -186,6 +186,8 @@ impl<'d, T: Instance> SpiSlave<'d, T> {
                 w.set_crcen(false);
                 w.set_dsize(<u8 as SealedWord>::CONFIG);
                 w.set_fthlv(vals::Fthlv::ONE_FRAME);
+                w.set_udrcfg(vals::Udrcfg::CONSTANT); // This is specific to my use case and should be configurable.
+                w.set_udrdet(vals::Udrdet::END_OF_FRAME); // This is specific to my use case and should be configurable.
             });
             regs.cr2().modify(|w| {
                 w.set_tsize(0);
@@ -193,6 +195,7 @@ impl<'d, T: Instance> SpiSlave<'d, T> {
             regs.cr1().modify(|w| {
                 w.set_ssi(false);
             });
+            regs.udrdr().write(|w| w.set_udrdr(0x0000_0000)); // This is specific to my use case and should be configurable.
         }
 
         Self {
