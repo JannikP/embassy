@@ -238,6 +238,31 @@ impl<'d, T: Instance> SpiSlave<'d, T> {
         )
     }
 
+    /// Create a new SPI driver, in RX-only mode (only MISO pin, no MOSI).
+    pub fn new_rxonly_no_cs(
+        peri: impl Peripheral<P = T> + 'd,
+        sck: impl Peripheral<P = impl SckPin<T>> + 'd,
+        mosi: impl Peripheral<P = impl MosiPin<T>> + 'd,
+        rx_dma: impl Peripheral<P = impl RxDma<T>> + 'd,
+        config: Config,
+    ) -> Self {
+        into_ref!(peri, sck, mosi);
+
+        sck.set_as_af(sck.af_num(), AfType::input(Pull::None));
+        mosi.set_as_af(mosi.af_num(), AfType::input(Pull::None));
+
+        Self::new_inner(
+            peri,
+            Some(sck.map_into()),
+            Some(mosi.map_into()),
+            None,
+            None,
+            None,
+            new_dma!(rx_dma),
+            config,
+        )
+    }
+
     /// Create a new SPI driver, in TX-only mode (only MOSI pin, no MISO).
     pub fn new_txonly<Cs>(
         peri: impl Peripheral<P = T> + 'd,
@@ -262,6 +287,31 @@ impl<'d, T: Instance> SpiSlave<'d, T> {
             None,
             Some(miso.map_into()),
             Some(cs.map_into()),
+            new_dma!(tx_dma),
+            None,
+            config,
+        )
+    }
+
+    /// Create a new SPI driver, in TX-only mode (only MOSI pin, no MISO).
+    pub fn new_txonly_no_cs(
+        peri: impl Peripheral<P = T> + 'd,
+        sck: impl Peripheral<P = impl SckPin<T>> + 'd,
+        miso: impl Peripheral<P = impl MisoPin<T>> + 'd,
+        tx_dma: impl Peripheral<P = impl TxDma<T>> + 'd,
+        config: Config,
+    ) -> Self {
+        into_ref!(peri, sck, miso);
+
+        sck.set_as_af(sck.af_num(), AfType::input(Pull::None));
+        miso.set_as_af(miso.af_num(), AfType::output(OutputType::PushPull, Speed::VeryHigh));
+
+        Self::new_inner(
+            peri,
+            Some(sck.map_into()),
+            None,
+            Some(miso.map_into()),
+            None,
             new_dma!(tx_dma),
             None,
             config,
