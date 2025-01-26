@@ -171,16 +171,14 @@ impl<'d, T: Instance> SpiSlave<'d, T> {
                 w.set_cpha(cpha);
                 w.set_cpol(cpol);
                 w.set_lsbfirst(lsbfirst);
-
                 w.set_master(vals::Master::SLAVE);
-                w.set_ssm(false);
-
+                w.set_ssm(cs.is_none()); // No Cs pin -> software management
                 w.set_comm(vals::Comm::FULL_DUPLEX);
                 w.set_ssom(vals::Ssom::ASSERTED);
                 w.set_midi(0);
                 w.set_mssi(0);
                 w.set_afcntr(true);
-                w.set_ssiop(vals::Ssiop::ACTIVE_HIGH);
+                w.set_ssiop(vals::Ssiop::ACTIVE_LOW);
             });
             regs.cfg1().modify(|w| {
                 w.set_crcen(false);
